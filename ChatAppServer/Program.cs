@@ -52,14 +52,14 @@ namespace ChatAppServer
         class ClientThread
         {
             Program p;
-            StreamReader input;
-            StreamWriter output;
+            //StreamReader input;
+            //StreamWriter output;
             String username;
-            NetworkStream s;
+            NetworkStream stream;
 
             public ClientThread(NetworkStream s, Program p)
             {
-                this.s = s;
+                stream = s;
                 this.p = p;
                 Thread t = new Thread(runClient);
                 t.Start();
@@ -70,18 +70,48 @@ namespace ChatAppServer
                 return p.al;
             }
 
+            public String readMessage()
+            {
+                //byte[] buffer = new byte[16 * 1024];
+                //using (MemoryStream ms = new MemoryStream())
+                //{
+                //    int read;
+                //    BinaryReader br = new BinaryReader(stream);
+                //    byte size = (byte)br.ReadByte();
+                //    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                //    {
+                //        ms.Write(buffer, 0, read);
+
+                //    }
+
+                //}
+                //String s = "CLIENT: " + Encoding.ASCII.GetString(buffer);
+                //return Encoding.ASCII.GetString(buffer);
+                BinaryReader reader = new BinaryReader(stream);
+   
+                //int size = reader.ReadInt32();
+
+                return (reader.ReadString());
+            }
             public void writeMessage(String message)
             {
-                output.WriteLine(message);
-                output.Flush();
+                //byte[] b = Encoding.ASCII.GetBytes(message);
+                //byte size = (byte)b.Length;
+                ////byte type = 0;
+                ////stream.WriteByte(type);
+                //stream.WriteByte(size);
+
+                //stream.Write(b, 0, size);
+                BinaryWriter writer = new BinaryWriter(stream);
+                writer.Write(message);
             }
 
             public void runClient()
             {
 
-                input = new StreamReader(s);
-                output = new StreamWriter(s);
-                username = input.ReadLine();
+                //input = new StreamReader(s);
+                //output = new StreamWriter(s);
+                username = readMessage();
 
                 String online = "Usuarios online: " + username;
                 foreach(ClientThread c in getList())
@@ -94,7 +124,7 @@ namespace ChatAppServer
                 while (true)
                 {
 
-                    String message = input.ReadLine();
+                    String message = readMessage();
                     if (message.Equals("exit"))
                     {
                         foreach (ClientThread c in getList())

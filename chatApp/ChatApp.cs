@@ -21,14 +21,15 @@ namespace chatApp
         String address;
         int port = 2121;
 
-        StreamReader input;
-        StreamWriter output;
+        //StreamReader input;
+        //StreamWriter output;
         NetworkStream stream;
         TcpClient socket;
 
         public ChatApp()
         {
             InitializeComponent();
+            RichTextBox.CheckForIllegalCrossThreadCalls = false;
         }
 
         private void buttonConectar_Click(object sender, EventArgs e)
@@ -44,8 +45,8 @@ namespace chatApp
             }
             else
             {
-                output.WriteLine("exit");
-                output.Flush();
+                writeMessage("exit");
+               
                 richTextBoxOutput.AppendText("\nTe desconectaste.");
                 buttonConectar.Text = "Conectar";
             }
@@ -71,23 +72,54 @@ namespace chatApp
             
              
             stream = socket.GetStream();
-            input = new StreamReader(stream);
-            output = new StreamWriter(stream);
+            //input = new StreamReader(stream);
+            //output = new StreamWriter(stream);
 
-            output.WriteLine(username);
-            output.Flush();
+            writeMessage(username);
 
             Thread t = new Thread(runListener);
             t.Start();
 
             
         }
+        public String readMessage()
+        {
+            //byte[] buffer = new byte[16 * 1024];
+            //using (MemoryStream ms = new MemoryStream())
+            //{
+            //    int read;
+            //    int size = stream.ReadByte();
+            //    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+            //    {
+            //        ms.Write(buffer, 0, read);
+
+            //    }
+
+            //}
+            //String s = "CLIENT: " + Encoding.ASCII.GetString(buffer);
+            //return Encoding.ASCII.GetString(buffer);
+            BinaryReader reader = new BinaryReader(stream);
+            return(reader.ReadString());
+        }
+        public void writeMessage(String message)
+        {
+            //byte[] b = Encoding.ASCII.GetBytes(message);
+            int size = message.Length;
+            ////int type = 0;
+            ////stream.WriteByte((byte)type);
+            //stream.WriteByte((byte)size);
+
+            //stream.Write(b, 0, size);
+            BinaryWriter writer = new BinaryWriter(stream);
+            //writer.Write(size);
+            writer.Write(message);
+        }
 
         public void runListener()
         {
             while (true)
             {
-                richTextBoxOutput.AppendText("\n> "+input.ReadLine());
+                richTextBoxOutput.AppendText("\n> "+readMessage());
                 richTextBoxOutput.SelectionStart = richTextBoxOutput.Text.Length;
                 richTextBoxOutput.ScrollToCaret();
             }
@@ -100,8 +132,7 @@ namespace chatApp
             {
                 richTextBoxInput.SelectAll();
                 String text = richTextBoxInput.SelectedText;
-                output.Write(text);
-                output.Flush();               
+                writeMessage(text);               
                 richTextBoxInput.Text = "";
 
             }
